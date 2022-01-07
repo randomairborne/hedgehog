@@ -2,7 +2,7 @@ use sha2::Digest;
 
 #[cfg(target_os = "windows")]
 pub fn setup(app_name: &str, release_server: &str) {
-    let path_string = format!("{}/{}", std::env::var("APPDATA").unwrap(), app_name);
+    let path_string = format!("{}/{}/", std::env::var("APPDATA").unwrap(), app_name);
     let install_location: &std::path::Path = std::path::Path::new(&path_string);
     let executable_path = std::path::PathBuf::from(format!(
         "{}{}-windows-{}.exe",
@@ -51,7 +51,7 @@ pub fn setup(app_name: &str, release_server: &str) {
             .collect::<String>();
         println!("Hasher result: `{:#?}`, response: `{}`", hash, response);
         if hash == response {
-            println!("We already have the latest version, exiting...");
+            println!("We already have the latest version, exiting Hedgehog...");
             return;
         }
     } else {
