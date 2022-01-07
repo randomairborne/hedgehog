@@ -55,7 +55,7 @@ pub fn setup(app_name: &str, release_server: &str) {
             return;
         }
     } else {
-        println!("{:?}", std::env::current_exe().unwrap());
+        println!("Moving from {:?} to {:?}", std::env::current_exe().unwrap(), executable_path);
         std::fs::rename(std::env::current_exe().unwrap(), executable_path).unwrap();
         setup(app_name, release_server);
     }
