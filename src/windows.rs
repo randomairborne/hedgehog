@@ -37,7 +37,8 @@ pub fn setup(app_name: &str, release_server: &str) {
         .text()
         .unwrap()
         .trim()
-        .to_string();
+        .to_string()
+        .to_lowercase();
     println!("{:#?}", response);
     if executable_path.exists() {
         let mut hasher = sha2::Sha256::new();
@@ -54,7 +55,11 @@ pub fn setup(app_name: &str, release_server: &str) {
             return;
         }
     } else {
-        println!("Moving from {:?} to {:?}", std::env::current_exe().unwrap(), executable_path);
+        println!(
+            "Moving from {:?} to {:?}",
+            std::env::current_exe().unwrap(),
+            executable_path
+        );
         std::fs::rename(std::env::current_exe().unwrap(), executable_path).unwrap();
         setup(app_name, release_server);
     }
