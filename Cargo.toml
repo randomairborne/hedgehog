@@ -1,0 +1,17 @@
+[package]
+name = "hedgehog"
+version = "0.0.1"
+authors = ["valkyrie_pilot <valk@randomairborne.dev>"]
+description = "A simple, one-function update/install library for Rust apps on Windows and Linux."
+documentation = "https://docs.rs/hedgehog"
+repository = "https://github.com/randomairborne/hedgehog"
+readme = "README.md"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+keywords = ["installer"]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = {version = "0.11.7", features = ["rustls-tls"], default-features = false}
