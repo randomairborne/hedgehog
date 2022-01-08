@@ -1,3 +1,5 @@
 /target
 Cargo.lock
+/hedgehog_test/target
+/hedgehog_test/Cargo.lock
 /.idea

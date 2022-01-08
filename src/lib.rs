@@ -22,7 +22,7 @@ pub fn update(app_name: &str, release_server: &str) {
         std::env::consts::ARCH
     ));
     #[cfg(all(target_family = "unix", not(target_os = "macos")))]
-        let executable_path = std::path::PathBuf::from(format!(
+        let mut executable_path = std::path::PathBuf::from(format!(
         "{}{}-{}-{}",
         path_string,
         app_name,
@@ -71,7 +71,7 @@ pub fn update(app_name: &str, release_server: &str) {
         .to_lowercase();
     if executable_path.exists() {
         let mut hasher = sha2::Sha256::new();
-        let mut file = std::fs::File::open(executable_path).unwrap();
+        let mut file = std::fs::File::open(executable_path.clone()).unwrap();
         std::io::copy(&mut file, &mut hasher).unwrap();
         let hash = hasher
             .finalize()
@@ -97,7 +97,11 @@ pub fn update(app_name: &str, release_server: &str) {
                 std::env::consts::OS,
                 std::env::consts::ARCH
             ));
-            reqwest_client.execute(download_request.build().unwrap())
+            let mut new_executable_path = executable_path;
+            new_executable_path.push(".tmp");
+            let mut update_file_path = std::fs::File::create(new_executable_path).unwrap();
+            let file_object = reqwest_client.execute(download_request.build().unwrap()).unwrap().bytes().unwrap();
+            std::io::copy(&mut file_object.as_ref(), &mut update_file_path).unwrap();
         }
     } else {
         println!(
@@ -107,5 +111,6 @@ pub fn update(app_name: &str, release_server: &str) {
         );
         std::fs::rename(std::env::current_exe().unwrap(), executable_path.clone()).unwrap();
         std::process::Command::new(executable_path);
+        std::process::exit(0)
     }
 }
