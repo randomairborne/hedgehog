@@ -1,12 +1,14 @@
+/// A simple installer and updater with only one function
+
 use sha2::Digest;
 // Why so few imports?
 // To me, the code is more clear if i know exactly what module everything is in.
 
 /// Hedgehog's main function
 /// Call this at the very start of your program, will call the entire update sequence (including moving the binary) according to your OS
-/// app_name should be... the name of your app, release_server is a URL to your release server folder with a trailing slash.
+/// `app_name` should be... the name of your app, `release_server` is a URL to your release server folder with a trailing slash.
 /// The release server folder should have the latest version of your app for this OS, configured as so: `<appname>-<osname>-<arch>` with the `exe` extension for windows.
-/// `appname` can be whatever you want, but must remain consistent throughout updates. `osname` should be from https://doc.rust-lang.org/std/env/consts/constant.OS.html and `arch` should be from https://doc.rust-lang.org/std/env/consts/constant.ARCH.html
+/// `appname` can be whatever you want, but must remain consistent throughout updates. `osname` should be from `[std::env::consts::OS](https://doc.rust-lang.org/std/env/consts/constant.OS.html)` and `arch` should be from `[std::env::consts::ARCH](https://doc.rust-lang.org/std/env/consts/constant.ARCH.html)`
 /// There MUST also be a file with the extension .sha256sum appended onto the filename of the app, so it can detect if it's been updated and validate the download.
 pub fn update(app_name: &str, release_server: &str) {
     #[cfg(target_os = "windows")]
@@ -71,14 +73,14 @@ pub fn update(app_name: &str, release_server: &str) {
         .to_lowercase();
     if executable_path.exists() {
         let mut hasher = sha2::Sha256::new();
-        let mut file = std::fs::File::open(executable_path.clone()).unwrap();
+        let mut file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
         std::io::copy(&mut file, &mut hasher).unwrap();
         let hash = hasher
             .finalize()
             .into_iter()
             .map(|x| format!("{:02x}", x))
             .collect::<String>();
-        println!("Hasher result: `{:#?}`, response: `{}`", hash, response);
+        println!("Hasher result: `{}`, response: `{}`", hash, response);
         if hash == response {
             println!("We already have the latest version, exiting Hedgehog...");
         } else {
@@ -98,10 +100,16 @@ pub fn update(app_name: &str, release_server: &str) {
                 std::env::consts::ARCH
             ));
             let mut new_executable_path = executable_path;
-            new_executable_path.push(".tmp");
+            new_executable_path.set_extension(".exe.tmp");
+            println!("{:?}", new_executable_path);
+            std::fs::create_dir_all(new_executable_path.parent().unwrap()).unwrap();
             let mut update_file_path = std::fs::File::create(new_executable_path).unwrap();
-            let file_object = reqwest_client.execute(download_request.build().unwrap()).unwrap().bytes().unwrap();
-            std::io::copy(&mut file_object.as_ref(), &mut update_file_path).unwrap();
+            let file_object = reqwest_client.execute(download_request.build().unwrap()).unwrap();
+            if file_object.status().is_success() {
+                std::io::copy(&mut file_object.bytes().unwrap().as_ref(), &mut update_file_path).unwrap();
+            } else {
+                panic!("Update server returned an error!")
+            }
         }
     } else {
         println!(
@@ -114,3 +122,4 @@ pub fn update(app_name: &str, release_server: &str) {
         std::process::exit(0)
     }
 }
+
